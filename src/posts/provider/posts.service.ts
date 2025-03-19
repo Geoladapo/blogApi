@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Body, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { UserService } from 'src/users/providers/users.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { Repository } from 'typeorm';
@@ -8,6 +13,7 @@ import { MetaOption } from 'src/meta-options/meta-options.entity';
 import { Post } from '../post.entity';
 import { TagsService } from 'src/tags/provider/tags.service';
 import { PatchPostDto } from '../dto/update-post.dto';
+import { Tags } from 'src/tags/tags.entity';
 
 @Injectable()
 export class PostsService {
@@ -49,16 +55,36 @@ export class PostsService {
   }
 
   public async update(patchPostDto: PatchPostDto) {
+    let tags: Tags[] | null = null;
+    let post: Post | null = null;
+
     // find the tags
-    const tags = await this.tagsService.findMultipleTags(
-      patchPostDto.tags || [],
-    );
+    try {
+      tags = await this.tagsService.findMultipleTags(patchPostDto.tags || []);
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment please try again laster',
+      );
+    }
+
+    if (!tags || tags.length !== (patchPostDto.tags ?? []).length) {
+      throw new BadRequestException(
+        'Please check your tag Ids and ensure they are correct',
+      );
+    }
+
     // find the post
-    const post = await this.postRepository.findOneBy({ id: patchPostDto.id });
+    try {
+      post = await this.postRepository.findOneBy({ id: patchPostDto.id });
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment please try again laster',
+      );
+    }
 
     // update the property of the post
     if (!post) {
-      throw new Error('Post not found');
+      throw new BadRequestException('Post not found');
     }
     post.title = patchPostDto.title ?? post.title;
     post.content = patchPostDto.content ?? post.content;
@@ -76,7 +102,14 @@ export class PostsService {
     // assign the new tags
     post.tags = tags;
     // save the post and return it
-    return await this.postRepository.save(post);
+
+    try {
+      return await this.postRepository.save(post);
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment please try again laster',
+      );
+    }
   }
 
   public async delete(id: number) {
