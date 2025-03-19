@@ -1,0 +1,7 @@
+POST http://localhost:3000/meta-options
+Content-Type: application/json
+User-Agent: httpyac
+
+{
+          "metaValue": "{\"sidebarEnabled\": true, \"footerActive\":true}"
+}
