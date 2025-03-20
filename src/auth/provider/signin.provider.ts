@@ -1,16 +1,13 @@
-import { UserService } from 'src/users/providers/users.service';
 import { SignInDTO } from '../dtos/sign-in.dto';
 import {
-  forwardRef,
   Inject,
   Injectable,
   RequestTimeoutException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { HashingProvider } from './hashing.provider';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigType } from '@nestjs/config';
-import jwtConfig from '../config/jwt.config';
+import { UserService } from '../../users/providers/users.service';
+import { GenerateTokenProvider } from './generate-token.provider';
 
 @Injectable()
 export class SigninProvider {
@@ -19,10 +16,8 @@ export class SigninProvider {
     private readonly userService: UserService,
 
     private readonly hashingProvider: HashingProvider,
-    private readonly jwtService: JwtService,
 
-    @Inject(jwtConfig.KEY)
-    private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
+    private readonly generateTokensProvider: GenerateTokenProvider,
   ) {}
 
   public async signIn(signInDTO: SignInDTO) {
@@ -51,21 +46,6 @@ export class SigninProvider {
       throw new UnauthorizedException('Incorrect Password');
     }
 
-    const accessToken = await this.jwtService.signAsync(
-      {
-        id: user.id,
-        email: user.email,
-      },
-      {
-        audience: this.jwtConfiguration.audience,
-        issuer: this.jwtConfiguration.issuer,
-        secret: this.jwtConfiguration.secret,
-        expiresIn: this.jwtConfiguration.accessTokenTtl,
-      },
-    );
-
-    return {
-      accessToken,
-    };
+    return await this.generateTokensProvider.generateTokens(user);
   }
 }
