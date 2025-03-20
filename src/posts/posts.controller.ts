@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Body,
   Controller,
@@ -14,6 +15,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PatchPostDto } from './dto/update-post.dto';
 import { GetPostsDto } from './dto/get-post.dto';
+import { ActiveUser } from 'src/auth/decorator/active-user.decorator';
+import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -33,8 +36,11 @@ export class PostsController {
     description: 'The record has been successfully created.',
   })
   @Post()
-  public createPost(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  public createPost(
+    @Body() createPostDto: CreatePostDto,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.postService.create(createPostDto, user);
   }
 
   @Patch()
