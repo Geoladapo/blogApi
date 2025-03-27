@@ -14,12 +14,15 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from '../user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDTO } from '../dtos/create-user.dto';
-import { ConfigService, ConfigType } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import profileConfig from '../config/profile.config';
 import { UsersCreateManyProvider } from './users-create-many.provider';
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
 import { CreateUserProvider } from './create-user.provider';
 import { FindUserByEmailProvider } from './find-user-by-email.provider';
+import { FindOneByGoogleIdProvider } from './find-one-by-google-id.provider';
+import { CreateGoogleUserProvider } from './create-google-user.provider';
+import { GoogleUser } from '../interfaces/google-user.interface';
 
 /**
  * class to connect to user's table and perform business logic
@@ -38,6 +41,10 @@ export class UserService {
     private readonly createUserProvider: CreateUserProvider,
 
     private readonly findOneUserByEmailProvider: FindUserByEmailProvider,
+
+    private readonly findOneByGoogleIdProvider: FindOneByGoogleIdProvider,
+
+    private readonly createGoogleUserProvider: CreateGoogleUserProvider,
   ) {}
 
   public async createUser(createUserDto: CreateUserDTO) {
@@ -98,5 +105,13 @@ export class UserService {
 
   public async findOneByEmail(email: string) {
     return await this.findOneUserByEmailProvider.findOneByEmail(email);
+  }
+
+  public async findOneByGoogleId(googleId: string) {
+    return await this.findOneByGoogleIdProvider.findOneByGoogleId(googleId);
+  }
+
+  public async createGoogleUser(googleUser: GoogleUser) {
+    return await this.createGoogleUserProvider.createGoogleUser(googleUser);
   }
 }

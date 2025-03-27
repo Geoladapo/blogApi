@@ -27,7 +27,7 @@ export class RefreshTokensProvider {
   public async refreshTokens(refreshTokenDto: RefreshTokenDto) {
     try {
       // verify the refresh token using the jwt service
-      const { sub } = await this.jwtService.verifyAsync(
+      const { sub } = await this.jwtService.verifyAsync<{ sub: number }>(
         refreshTokenDto.refreshToken,
         {
           secret: this.jwtConfiguration.secret,

@@ -1,5 +1,6 @@
 import { SignInDTO } from '../dtos/sign-in.dto';
 import {
+  forwardRef,
   Inject,
   Injectable,
   RequestTimeoutException,
